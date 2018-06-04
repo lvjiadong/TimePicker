@@ -26,6 +26,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
     private Button bten;
     private BottomDialog bottomDialog;
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +41,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
     private void dialogtime() {
         WheelView.WheelViewStyle style = new WheelView.WheelViewStyle();
         style.selectedTextColor = Color.parseColor("#1A1A1A");//选中字体颜色
         style.textColor = Color.parseColor("#ABABAB");//未选中字体颜色
-        View out_view = LayoutInflater.from(this).inflate(R.layout.dialog_time, null);
+
+
+        View out_view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_time, null);
         //日期滚轮
         final WheelView start_year = out_view.findViewById(R.id.start_year);
         final WheelView start_month = out_view.findViewById(R.id.start_month);
@@ -69,23 +71,23 @@ public class MainActivity extends AppCompatActivity {
         int currentMonth = Integer.parseInt(split[1]);
         int currentDay = Integer.parseInt(split[2]);
         //开始时间
-        start_year.setWheelAdapter(new MyWheelAdapter(this));
+        start_year.setWheelAdapter(new MyWheelAdapter(MainActivity.this));
         start_year.setWheelData(getYearData(currentYear));
         start_year.setSelection(0);
-        start_month.setWheelAdapter(new MyWheelAdapter(this));
+        start_month.setWheelAdapter(new MyWheelAdapter(MainActivity.this));
         start_month.setWheelData(getMonthData());
         start_month.setSelection(currentMonth - 1);
-        start_day.setWheelAdapter(new MyWheelAdapter(this));
+        start_day.setWheelAdapter(new MyWheelAdapter(MainActivity.this));
         start_day.setWheelData(getDayData(getLastDay(currentYear, currentMonth)));
         start_day.setSelection(currentDay - 1);
         //结束时间
-        end_year.setWheelAdapter(new MyWheelAdapter(this));
+        end_year.setWheelAdapter(new MyWheelAdapter(MainActivity.this));
         end_year.setWheelData(getYearData(currentYear));
         end_year.setSelection(0);
-        end_month.setWheelAdapter(new MyWheelAdapter(this));
+        end_month.setWheelAdapter(new MyWheelAdapter(MainActivity.this));
         end_month.setWheelData(getMonthData());
         end_month.setSelection(currentMonth - 1);
-        end_day.setWheelAdapter(new MyWheelAdapter(this));
+        end_day.setWheelAdapter(new MyWheelAdapter(MainActivity.this));
         end_day.setWheelData(getDayData(getLastDay(currentYear, currentMonth)));
         end_day.setSelection(currentDay - 1);
 
@@ -106,19 +108,63 @@ public class MainActivity extends AppCompatActivity {
                 int startyear = Integer.valueOf(String.valueOf(startyear1));
                 int startmonth = Integer.valueOf(String.valueOf(startmonth1));
                 int startday = Integer.valueOf(String.valueOf(startday1));
+                String startmonth2;
+                if (startmonth < 10) {
+                    startmonth2 = "0" + String.valueOf(+startmonth);
+                } else {
+                    startmonth2 = String.valueOf(startmonth);
+                }
+                String startday2;
+                if (startday < 10) {
+                    startday2 = "0" + String.valueOf(startday);
+                } else {
+                    startday2 = String.valueOf(startday);
+                }
                 int endyear = Integer.valueOf(String.valueOf(endyear1));
                 int endmonth = Integer.valueOf(String.valueOf(endmonth1));
                 int endday = Integer.valueOf(String.valueOf(endday1));
-
-                if (endyear - startyear >= 0 && endmonth - startmonth >= 0 && endday - startday >= 0) {
-                    start_time = start_year.getSelectionItem() + "/" + start_month.getSelectionItem() + "/" + start_day.getSelectionItem();
-                    end_time = end_year.getSelectionItem() + "/" + end_month.getSelectionItem() + "/" + end_day.getSelectionItem();
-                    ToastUtil.showToast(MainActivity.this,"起始时间："+start_time+"结束时间："+end_time);
+                String endmonth2;
+                if (endmonth < 10) {
+                    endmonth2 = "0" + String.valueOf(endmonth);
                 } else {
-                    ToastUtil.showToast(MainActivity.this, "请正确选择时间");
+                    endmonth2 = String.valueOf(endmonth);
+                }
+                String endday2;
+                if (endday < 10) {
+                    endday2 = "0" + String.valueOf(endday);
+                } else {
+                    endday2 = String.valueOf(endday);
                 }
 
-
+                if (endyear - startyear == 0) {
+                    if (endmonth - startmonth <= 2 && endmonth - startmonth >= 0) {
+                        if (endmonth - startmonth == 0) {
+                            if (endday - startday >= 0) {
+                                start_time = startyear + "/" + startmonth2 + "/" + startday2;
+                                
+                                end_time = endyear + "/" + endmonth2 + "/" + endday2;
+                              
+                                Log.e(TAG, "starttime: " + start_time + "/n" + "endtime:" + end_time);
+                                
+                            } else {
+                                ToastUtil.showToast(MainActivity.this, "当月起始日期不能大于结束日期");
+                            }
+                        } else {
+                            start_time = startyear + "/" + startmonth2 + "/" + startday2;
+                            
+                            end_time = endyear + "/" + endmonth2 + "/" + endday2;
+                         
+                            Log.e(TAG, "starttime: " + start_time + "/n" + "endtime:" + end_time);
+                            
+                        }
+                    } else if (endmonth < startmonth) {
+                        ToastUtil.showToast(MainActivity.this, "起始时间不能大于结束时间");
+                    } else {
+                        ToastUtil.showToast(MainActivity.this, "请选择两个月");
+                    }
+                } else {
+                    ToastUtil.showToast(MainActivity.this, "请输入正确的年份");
+                }
             }
         });
         //取消
@@ -132,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         if (bottomDialog != null && bottomDialog.isShowing()) {
             return;
         }
-        bottomDialog = new BottomDialog(this, R.style.ActionSheetDialogStyle);
+        bottomDialog = new BottomDialog(MainActivity.this, R.style.ActionSheetDialogStyle);
         //将布局设置给Dialog
         bottomDialog.setContentView(out_view);
         bottomDialog.show();//显示对话框
@@ -193,6 +239,5 @@ public class MainActivity extends AppCompatActivity {
         // 一三五七八十腊，三十一天永不差
         return month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12 ? 31 : 30;
     }
-
 
 }
